@@ -1,6 +1,7 @@
 import { WktUserOptions, geoJSONToWkt, wktToGeoJSON } from "./index";
 import { test, describe, it, expect } from "vitest";
 import { Geometry } from "geojson";
+import proj4 from "proj4";
 import { WKT_GEOMETRY_TYPES } from "../constants";
 
 function reversible(
@@ -195,5 +196,20 @@ describe("parsing and stringifying", () => {
         emptyAsNull: false,
       }
     );
+  });
+
+  it("ewkt", () => {
+    expect(wktToGeoJSON(`SRID=4326;POINT(-44.3 60.1)`)).toEqual({
+      coordinates: [-44.3, 60.1],
+      type: "Point",
+    });
+    expect(
+      wktToGeoJSON(`SRID=3857;POINT(-400004.3 60000.1)`, {
+        proj: proj4,
+      })
+    ).toEqual({
+      coordinates: [-3.5932997640353026, 0.5389821193537617],
+      type: "Point",
+    });
   });
 });

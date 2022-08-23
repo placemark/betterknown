@@ -15,3 +15,4 @@ TypeScript from day one.
 - 100% TypeScript
 - **No dependencies** - tiny bundle
 - Parse WKT to GeoJSON, stringify GeoJSON to WKT
+- Optional reprojection of EWKT

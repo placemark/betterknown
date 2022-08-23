@@ -16,14 +16,19 @@ interface ZM {
   hasM: boolean;
 }
 
+export interface WktUserOptions {
+  emptyAsNull?: true;
+  proj?: (
+    fromProjection: string,
+    toProjection: string,
+    coordinate: Position
+  ) => Position;
+}
+
 type WktOptions = WktUserOptions &
   ZM & {
     srid: number | null;
   };
-
-export interface WktUserOptions {
-  emptyAsNull?: true;
-}
 
 type GeometryParser = (arg0: WktParser, options: WktOptions) => Geometry | null;
 
@@ -109,7 +114,7 @@ class WktParser {
     if (!this.isMatch(")")) throw new Error("Expected group end");
   }
 
-  matchCoordinate(options: ZM): Position {
+  matchCoordinate(options: WktOptions): Position {
     let match: RegExpMatchArray | null;
 
     if (options.hasZ && options.hasM) {
@@ -122,28 +127,39 @@ class WktParser {
 
     if (!match) throw new Error("Expected coordinates");
 
-    if (options.hasZ && options.hasM) {
-      return [
-        parseFloat(match[1]),
-        parseFloat(match[2]),
-        parseFloat(match[3]),
-        parseFloat(match[4]),
-      ];
-    } else if (options.hasZ) {
-      return [parseFloat(match[1]), parseFloat(match[2]), parseFloat(match[3])];
-    } else if (options.hasM) {
-      return [
-        parseFloat(match[1]),
-        parseFloat(match[2]),
-        // undefined,
-        // parseFloat(match[3]),
-      ];
-    } else {
-      return [parseFloat(match[1]), parseFloat(match[2])];
+    const position: Position =
+      options.hasZ && options.hasM
+        ? [
+            parseFloat(match[1]),
+            parseFloat(match[2]),
+            parseFloat(match[3]),
+            parseFloat(match[4]),
+          ]
+        : options.hasZ
+        ? [parseFloat(match[1]), parseFloat(match[2]), parseFloat(match[3])]
+        : options.hasM
+        ? [
+            parseFloat(match[1]),
+            parseFloat(match[2]),
+            // undefined,
+            // parseFloat(match[3]),
+          ]
+        : [parseFloat(match[1]), parseFloat(match[2])];
+
+    if (options.srid && options.srid !== 4326) {
+      if (options.proj) {
+        return options.proj(`EPSG:${options.srid}`, "EPSG:4326", position);
+      } else {
+        throw new Error(
+          `EWKT data in an unknown SRID (${options.srid}) was provided, but a proj function was not`
+        );
+      }
     }
+
+    return position;
   }
 
-  matchCoordinates(options: ZM): Position[] {
+  matchCoordinates(options: WktOptions): Position[] {
     const coordinates = [];
 
     do {
