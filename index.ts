@@ -9,30 +9,23 @@ import type {
   MultiPolygon,
   MultiLineString,
 } from "geojson";
-
-type WktOptions = ZM & {
-  srid: number | null;
-};
-
-type GeometryParser = (arg0: WktParser, options: WktOptions) => Geometry | null;
+import { EMPTY, WKT_GEOMETRY_TYPES, ZZM } from "./constants";
 
 interface ZM {
   hasZ: boolean;
   hasM: boolean;
 }
 
-const WKT_GEOMETRY_TYPES = [
-  "POINT",
-  "LINESTRING",
-  "POLYGON",
-  "MULTIPOINT",
-  "MULTILINESTRING",
-  "MULTIPOLYGON",
-  "GEOMETRYCOLLECTION",
-] as const;
+type WktOptions = WktUserOptions &
+  ZM & {
+    srid: number | null;
+  };
 
-const ZZM = ["ZM", "Z", "M"];
-const EMPTY = "EMPTY";
+export interface WktUserOptions {
+  emptyAsNull?: true;
+}
+
+type GeometryParser = (arg0: WktParser, options: WktOptions) => Geometry | null;
 
 class WktParser {
   value: string;
@@ -175,7 +168,9 @@ class WktParser {
 }
 
 const parseWktPoint: GeometryParser = (value, options) => {
-  if (value.isMatch(EMPTY)) return null;
+  if (value.isMatch(EMPTY)) {
+    return options.emptyAsNull ? null : { type: "Point", coordinates: [] };
+  }
 
   value.expectGroupStart();
 
@@ -190,7 +185,9 @@ const parseWktPoint: GeometryParser = (value, options) => {
 };
 
 const parseWktLineString: GeometryParser = (value, options) => {
-  if (value.isMatch(EMPTY)) return null;
+  if (value.isMatch(EMPTY)) {
+    return options.emptyAsNull ? null : { type: "LineString", coordinates: [] };
+  }
 
   value.expectGroupStart();
   const coordinates = value.matchCoordinates(options);
@@ -203,7 +200,9 @@ const parseWktLineString: GeometryParser = (value, options) => {
 };
 
 const parseWktPolygon: GeometryParser = (value, options) => {
-  if (value.isMatch(EMPTY)) return null;
+  if (value.isMatch(EMPTY)) {
+    return options.emptyAsNull ? null : { type: "Polygon", coordinates: [] };
+  }
 
   const coordinates = [];
 
@@ -228,7 +227,9 @@ const parseWktPolygon: GeometryParser = (value, options) => {
 };
 
 const parseWktMultiPoint: GeometryParser = (value, options) => {
-  if (value.isMatch(EMPTY)) return null;
+  if (value.isMatch(EMPTY)) {
+    return options.emptyAsNull ? null : { type: "MultiPoint", coordinates: [] };
+  }
 
   value.expectGroupStart();
   const coordinates = value.matchCoordinates(options);
@@ -241,7 +242,11 @@ const parseWktMultiPoint: GeometryParser = (value, options) => {
 };
 
 const parseWktMultiLineString: GeometryParser = (value, options) => {
-  if (value.isMatch(EMPTY)) return null;
+  if (value.isMatch(EMPTY)) {
+    return options.emptyAsNull
+      ? null
+      : { type: "MultiLineString", coordinates: [] };
+  }
 
   value.expectGroupStart();
 
@@ -262,7 +267,11 @@ const parseWktMultiLineString: GeometryParser = (value, options) => {
 };
 
 const parseWktMultiPolygon: GeometryParser = (value, options) => {
-  if (value.isMatch(EMPTY)) return null;
+  if (value.isMatch(EMPTY)) {
+    return options.emptyAsNull
+      ? null
+      : { type: "MultiPolygon", coordinates: [] };
+  }
 
   value.expectGroupStart();
 
@@ -298,13 +307,17 @@ const parseWktMultiPolygon: GeometryParser = (value, options) => {
 };
 
 const parseWktGeometryCollection: GeometryParser = (value, options) => {
-  if (value.isMatch(EMPTY)) return null;
+  if (value.isMatch(EMPTY)) {
+    return options.emptyAsNull
+      ? null
+      : { type: "GeometryCollection", geometries: [] };
+  }
   value.expectGroupStart();
 
   const geometries: Geometry[] = [];
 
   do {
-    const geometry = wktToGeoJSONinner(value);
+    const geometry = wktToGeoJSONinner(value, options);
     if (geometry) {
       geometries.push(geometry);
     }
@@ -322,7 +335,10 @@ function stringifyCoordinate(point: Position): string {
   return point.join(" ");
 }
 
-function stringifyZM(position: Position): string {
+function stringifyZM(position: Position | undefined): string {
+  if (position === undefined) {
+    return " ";
+  }
   switch (position.length) {
     case 3:
       return " Z ";
@@ -332,7 +348,7 @@ function stringifyZM(position: Position): string {
 }
 
 function stringifyPoint(point: Point): string {
-  if (point.coordinates === null) {
+  if (point.coordinates.length === 0) {
     return "POINT EMPTY";
   }
 
@@ -342,7 +358,7 @@ function stringifyPoint(point: Point): string {
 }
 
 function stringifyMultiPoint(geometry: MultiPoint): string {
-  if (geometry.coordinates === null) {
+  if (geometry.coordinates.length === 0) {
     return "MULTIPOINT EMPTY";
   }
 
@@ -354,7 +370,7 @@ function stringifyMultiPoint(geometry: MultiPoint): string {
 }
 
 function stringifyLineString(geometry: LineString): string {
-  if (geometry.coordinates === null) {
+  if (geometry.coordinates.length === 0) {
     return "LINESTRING EMPTY";
   }
 
@@ -366,7 +382,7 @@ function stringifyLineString(geometry: LineString): string {
 }
 
 function stringifyGeometryCollection(geometry: GeometryCollection): string {
-  if (geometry.geometries === null) {
+  if (geometry.geometries.length === 0) {
     return "GEOMETRYCOLLECTION EMPTY";
   }
 
@@ -378,7 +394,7 @@ function stringifyGeometryCollection(geometry: GeometryCollection): string {
 }
 
 function stringifyMultiLineString(geometry: MultiLineString): string {
-  if (geometry.coordinates === null) {
+  if (geometry.coordinates.length === 0) {
     return "MULTILINESTRING EMPTY";
   }
 
@@ -390,7 +406,7 @@ function stringifyMultiLineString(geometry: MultiLineString): string {
 }
 
 function stringifyPolygon(geometry: Polygon): string {
-  if (geometry.coordinates === null) {
+  if (geometry.coordinates.length === 0) {
     return "POLYGON EMPTY";
   }
 
@@ -398,11 +414,11 @@ function stringifyPolygon(geometry: Polygon): string {
     return `(${ring.map((coordinate) => stringifyCoordinate(coordinate))})`;
   })})`;
 
-  return `POLYGON${stringifyZM(geometry.coordinates[0][0])}${innerWkt}`;
+  return `POLYGON${stringifyZM(geometry.coordinates[0]?.[0])}${innerWkt}`;
 }
 
 function stringifyMultiPolygon(geometry: MultiPolygon): string {
-  if (geometry.coordinates === null) {
+  if (geometry.coordinates.length === 0) {
     return "MULTIPOLYGON EMPTY";
   }
 
@@ -412,10 +428,12 @@ function stringifyMultiPolygon(geometry: MultiPolygon): string {
     })})`;
   })})`;
 
-  return `MULTIPOLYGON${stringifyZM(geometry.coordinates[0][0][0])}${innerWkt}`;
+  return `MULTIPOLYGON${stringifyZM(
+    geometry.coordinates[0]?.[0]?.[0]
+  )}${innerWkt}`;
 }
 
-function wktToGeoJSONinner(wktParser: WktParser) {
+function wktToGeoJSONinner(wktParser: WktParser, userOptions: WktUserOptions) {
   let srid: number | null = null;
 
   const match = wktParser.matchRegex([/^SRID=(\d+);/]);
@@ -425,6 +443,7 @@ function wktToGeoJSONinner(wktParser: WktParser) {
   const dimension = wktParser.matchDimension();
 
   const options: WktOptions = {
+    ...userOptions,
     srid: srid,
     hasZ: dimension.hasZ,
     hasM: dimension.hasM,
@@ -473,6 +492,11 @@ export function geoJSONToWkt(geometry: Geometry): string {
 /**
  * Parse WKT input into GeoJSON output.
  */
-export function wktToGeoJSON(value: string) {
-  return wktToGeoJSONinner(new WktParser(value));
+export function wktToGeoJSON(
+  value: string,
+  options: WktUserOptions = {
+    emptyAsNull: true,
+  }
+) {
+  return wktToGeoJSONinner(new WktParser(value), options);
 }
