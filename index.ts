@@ -71,14 +71,17 @@ class WktParser {
     return null;
   }
 
-  isMatch(tokens: string[]) {
+  /**
+   * In wkx, this method supports an array, but was only used
+   * with one element, so this version skips the array allocations
+   * & the loop.
+   */
+  isMatch(token: string) {
     this.skipWhitespaces();
 
-    for (const token of tokens) {
-      if (this.value.startsWith(token, this.position)) {
-        this.position += token.length;
-        return true;
-      }
+    if (this.value.startsWith(token, this.position)) {
+      this.position += token.length;
+      return true;
     }
 
     return false;
@@ -106,11 +109,11 @@ class WktParser {
   }
 
   expectGroupStart() {
-    if (!this.isMatch(["("])) throw new Error("Expected group start");
+    if (!this.isMatch("(")) throw new Error("Expected group start");
   }
 
   expectGroupEnd() {
-    if (!this.isMatch([")"])) throw new Error("Expected group end");
+    if (!this.isMatch(")")) throw new Error("Expected group end");
   }
 
   matchCoordinate(options: ZM): Position {
@@ -151,12 +154,12 @@ class WktParser {
     const coordinates = [];
 
     do {
-      const startsWithBracket = this.isMatch(["("]);
+      const startsWithBracket = this.isMatch("(");
 
       coordinates.push(this.matchCoordinate(options));
 
       if (startsWithBracket) this.expectGroupEnd();
-    } while (this.isMatch([","]));
+    } while (this.isMatch(","));
 
     return coordinates;
   }
@@ -172,7 +175,7 @@ class WktParser {
 }
 
 const parseWktPoint: GeometryParser = (value, options) => {
-  if (value.isMatch([EMPTY])) return null;
+  if (value.isMatch(EMPTY)) return null;
 
   value.expectGroupStart();
 
@@ -187,7 +190,7 @@ const parseWktPoint: GeometryParser = (value, options) => {
 };
 
 const parseWktLineString: GeometryParser = (value, options) => {
-  if (value.isMatch([EMPTY])) return null;
+  if (value.isMatch(EMPTY)) return null;
 
   value.expectGroupStart();
   const coordinates = value.matchCoordinates(options);
@@ -200,7 +203,7 @@ const parseWktLineString: GeometryParser = (value, options) => {
 };
 
 const parseWktPolygon: GeometryParser = (value, options) => {
-  if (value.isMatch([EMPTY])) return null;
+  if (value.isMatch(EMPTY)) return null;
 
   const coordinates = [];
 
@@ -210,7 +213,7 @@ const parseWktPolygon: GeometryParser = (value, options) => {
   coordinates.push(value.matchCoordinates(options));
   value.expectGroupEnd();
 
-  while (value.isMatch([","])) {
+  while (value.isMatch(",")) {
     value.expectGroupStart();
     coordinates.push(value.matchCoordinates(options));
     value.expectGroupEnd();
@@ -225,7 +228,7 @@ const parseWktPolygon: GeometryParser = (value, options) => {
 };
 
 const parseWktMultiPoint: GeometryParser = (value, options) => {
-  if (value.isMatch([EMPTY])) return null;
+  if (value.isMatch(EMPTY)) return null;
 
   value.expectGroupStart();
   const coordinates = value.matchCoordinates(options);
@@ -238,7 +241,7 @@ const parseWktMultiPoint: GeometryParser = (value, options) => {
 };
 
 const parseWktMultiLineString: GeometryParser = (value, options) => {
-  if (value.isMatch([EMPTY])) return null;
+  if (value.isMatch(EMPTY)) return null;
 
   value.expectGroupStart();
 
@@ -248,7 +251,7 @@ const parseWktMultiLineString: GeometryParser = (value, options) => {
     value.expectGroupStart();
     coordinates.push(value.matchCoordinates(options));
     value.expectGroupEnd();
-  } while (value.isMatch([","]));
+  } while (value.isMatch(","));
 
   value.expectGroupEnd();
 
@@ -259,7 +262,7 @@ const parseWktMultiLineString: GeometryParser = (value, options) => {
 };
 
 const parseWktMultiPolygon: GeometryParser = (value, options) => {
-  if (value.isMatch([EMPTY])) return null;
+  if (value.isMatch(EMPTY)) return null;
 
   value.expectGroupStart();
 
@@ -275,7 +278,7 @@ const parseWktMultiPolygon: GeometryParser = (value, options) => {
     exteriorRing.push.apply(exteriorRing, value.matchCoordinates(options));
     value.expectGroupEnd();
 
-    while (value.isMatch([","])) {
+    while (value.isMatch(",")) {
       value.expectGroupStart();
       interiorRings.push(value.matchCoordinates(options));
       value.expectGroupEnd();
@@ -284,7 +287,7 @@ const parseWktMultiPolygon: GeometryParser = (value, options) => {
     coordinates.push([exteriorRing, ...interiorRings]);
 
     value.expectGroupEnd();
-  } while (value.isMatch([","]));
+  } while (value.isMatch(","));
 
   value.expectGroupEnd();
 
@@ -295,7 +298,7 @@ const parseWktMultiPolygon: GeometryParser = (value, options) => {
 };
 
 const parseWktGeometryCollection: GeometryParser = (value, options) => {
-  if (value.isMatch([EMPTY])) return null;
+  if (value.isMatch(EMPTY)) return null;
   value.expectGroupStart();
 
   const geometries: Geometry[] = [];
@@ -305,7 +308,7 @@ const parseWktGeometryCollection: GeometryParser = (value, options) => {
     if (geometry) {
       geometries.push(geometry);
     }
-  } while (value.isMatch([","]));
+  } while (value.isMatch(","));
 
   value.expectGroupEnd();
 
