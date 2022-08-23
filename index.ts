@@ -32,10 +32,9 @@ const WKT_GEOMETRY_TYPES = [
 ] as const;
 
 const ZZM = ["ZM", "Z", "M"];
-
 const EMPTY = "EMPTY";
 
-export class WktParser {
+class WktParser {
   value: string;
   position: number;
 
@@ -302,7 +301,7 @@ const parseWktGeometryCollection: GeometryParser = (value, options) => {
   const geometries: Geometry[] = [];
 
   do {
-    const geometry = parseWkt(value);
+    const geometry = wktToGeoJSONinner(value);
     if (geometry) {
       geometries.push(geometry);
     }
@@ -344,11 +343,11 @@ function stringifyMultiPoint(geometry: MultiPoint): string {
     return "MULTIPOINT EMPTY";
   }
 
-  const innerWkt = `(${geometry.coordinates
+  return `MULTIPOINT${stringifyZM(
+    geometry.coordinates[0]
+  )}(${geometry.coordinates
     .map((coordinate) => stringifyCoordinate(coordinate))
     .join(",")})`;
-
-  return `MULTIPOINT${stringifyZM(geometry.coordinates[0])}${innerWkt}`;
 }
 
 function stringifyLineString(geometry: LineString): string {
@@ -369,7 +368,7 @@ function stringifyGeometryCollection(geometry: GeometryCollection): string {
   }
 
   const innerWkt = `(${geometry.geometries
-    .map((geometry) => stringifyGeoJSON(geometry))
+    .map((geometry) => geoJSONToWkt(geometry))
     .join(",")})`;
 
   return `GEOMETRYCOLLECTION${innerWkt}`;
@@ -413,32 +412,8 @@ function stringifyMultiPolygon(geometry: MultiPolygon): string {
   return `MULTIPOLYGON${stringifyZM(geometry.coordinates[0][0][0])}${innerWkt}`;
 }
 
-export function stringifyGeoJSON(geometry: Geometry): string {
-  switch (geometry.type) {
-    case "Point":
-      return stringifyPoint(geometry);
-    case "LineString":
-      return stringifyLineString(geometry);
-    case "MultiPoint":
-      return stringifyMultiPoint(geometry);
-    case "GeometryCollection":
-      return stringifyGeometryCollection(geometry);
-    case "Polygon":
-      return stringifyPolygon(geometry);
-    case "MultiPolygon":
-      return stringifyMultiPolygon(geometry);
-    case "MultiLineString":
-      return stringifyMultiLineString(geometry);
-  }
-}
-
-/**
- * Parse WKT input into GeoJSON output.
- */
-export function parseWkt(value: string | WktParser) {
+function wktToGeoJSONinner(wktParser: WktParser) {
   let srid: number | null = null;
-
-  const wktParser = value instanceof WktParser ? value : new WktParser(value);
 
   const match = wktParser.matchRegex([/^SRID=(\d+);/]);
   if (match) srid = parseInt(match[1], 10);
@@ -468,4 +443,33 @@ export function parseWkt(value: string | WktParser) {
     case "GEOMETRYCOLLECTION":
       return parseWktGeometryCollection(wktParser, options);
   }
+}
+
+/**
+ * Stringify GeoJSON as WKT
+ */
+export function geoJSONToWkt(geometry: Geometry): string {
+  switch (geometry.type) {
+    case "Point":
+      return stringifyPoint(geometry);
+    case "LineString":
+      return stringifyLineString(geometry);
+    case "MultiPoint":
+      return stringifyMultiPoint(geometry);
+    case "GeometryCollection":
+      return stringifyGeometryCollection(geometry);
+    case "Polygon":
+      return stringifyPolygon(geometry);
+    case "MultiPolygon":
+      return stringifyMultiPolygon(geometry);
+    case "MultiLineString":
+      return stringifyMultiLineString(geometry);
+  }
+}
+
+/**
+ * Parse WKT input into GeoJSON output.
+ */
+export function wktToGeoJSON(value: string) {
+  return wktToGeoJSONinner(new WktParser(value));
 }

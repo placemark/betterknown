@@ -1,31 +1,25 @@
-import { parseWkt, stringifyGeoJSON, WktParser } from "./index";
+import { geoJSONToWkt, wktToGeoJSON } from "./index";
 import { test, describe, it, expect } from "vitest";
 import { Geometry } from "geojson";
 
-test("WktParser", () => {
-  const p = new WktParser("POINT EMPTY");
-  expect(p.matchType()).toEqual("POINT");
-  expect(p.position).toEqual(5);
-});
-
 function reversible(wkt1: string, geometry1: Geometry) {
-  const geometry = parseWkt(wkt1);
+  const geometry = wktToGeoJSON(wkt1);
   expect(geometry).not.toBeNull();
-  const wkt = stringifyGeoJSON(geometry!);
+  const wkt = geoJSONToWkt(geometry!);
   expect(geometry).toEqual(geometry1);
   expect(wkt).toEqual(wkt1);
 }
 
-describe("parseWkt", () => {
+describe("parsing and stringifying", () => {
   it("overflow resistance", () => {
     const bigString = `MULTIPOLYGON (((${Array.from(
       { length: 1000 },
       (_, i) => `${i}, ${i}`
     ).join(",")})))`;
-    expect(parseWkt(bigString)).toHaveProperty("type", "MultiPolygon");
+    expect(wktToGeoJSON(bigString)).toHaveProperty("type", "MultiPolygon");
   });
   it("point", () => {
-    expect(parseWkt("POINT EMPTY")).toEqual(null);
+    expect(wktToGeoJSON("POINT EMPTY")).toEqual(null);
     reversible("POINT (1 20)", {
       type: "Point",
       coordinates: [1, 20],
