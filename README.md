@@ -11,3 +11,7 @@ needs to be because it brings in browserify shims.
 This project aims to be the combination of the two projects. Lightweight like
 wellknown, strict and correct like wkx, plus with the 2022 energy of supporting
 TypeScript from day one.
+
+- 100% TypeScript
+- **No dependencies** - tiny bundle
+- Parse WKT to GeoJSON, stringify GeoJSON to WKT

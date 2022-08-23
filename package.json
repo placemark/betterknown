@@ -8,14 +8,16 @@
   },
   "scripts": {
     "build": "vite build && tsc --declaration --emitDeclarationOnly",
-    "test": "vitest index.test.ts"
+    "test": "vitest test"
   },
   "devDependencies": {
     "@vitest/coverage-c8": "^0.22.1",
+    "benchmark": "^2.1.4",
     "prettier": "^2.7.1",
     "typescript": "^4.7.4",
     "vite": "^3.0.9",
-    "vitest": "^0.22.1"
+    "vitest": "^0.22.1",
+    "wkx": "^0.5.0"
   },
   "exports": {
     ".": {

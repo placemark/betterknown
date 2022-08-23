@@ -46,10 +46,10 @@ class WktParser {
   match<T extends string>(tokens: readonly T[]): T | null {
     this.skipWhitespaces();
 
-    for (var i = 0; i < tokens.length; i++) {
-      if (this.value.startsWith(tokens[i], this.position)) {
-        this.position += tokens[i].length;
-        return tokens[i];
+    for (const token of tokens) {
+      if (this.value.startsWith(token, this.position)) {
+        this.position += token.length;
+        return token;
       }
     }
 
@@ -59,8 +59,8 @@ class WktParser {
   matchRegex(tokens: RegExp[]) {
     this.skipWhitespaces();
 
-    for (var i = 0; i < tokens.length; i++) {
-      var match = this.value.substring(this.position).match(tokens[i]);
+    for (const token of tokens) {
+      const match = this.value.substring(this.position).match(token);
 
       if (match) {
         this.position += match[0].length;
@@ -74,9 +74,9 @@ class WktParser {
   isMatch(tokens: string[]) {
     this.skipWhitespaces();
 
-    for (var i = 0; i < tokens.length; i++) {
-      if (this.value.startsWith(tokens[i], this.position)) {
-        this.position += tokens[i].length;
+    for (const token of tokens) {
+      if (this.value.startsWith(token, this.position)) {
+        this.position += token.length;
         return true;
       }
     }
@@ -91,7 +91,7 @@ class WktParser {
   }
 
   matchDimension(): ZM {
-    var dimension = this.match(ZZM);
+    const dimension = this.match(ZZM);
 
     switch (dimension) {
       case "ZM":
@@ -148,10 +148,10 @@ class WktParser {
   }
 
   matchCoordinates(options: ZM): Position[] {
-    var coordinates = [];
+    const coordinates = [];
 
     do {
-      var startsWithBracket = this.isMatch(["("]);
+      const startsWithBracket = this.isMatch(["("]);
 
       coordinates.push(this.matchCoordinate(options));
 
