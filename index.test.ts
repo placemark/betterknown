@@ -16,15 +16,6 @@ function reversible(wkt1: string, geometry1: Geometry) {
   expect(wkt).toEqual(wkt1);
 }
 
-describe("stringifyGeoJSON", () => {
-  it("point", () => {
-    reversible("POINT (1 20)", {
-      type: "Point",
-      coordinates: [1, 20],
-    });
-  });
-});
-
 describe("parseWkt", () => {
   it("overflow resistance", () => {
     const bigString = `MULTIPOLYGON (((${Array.from(
@@ -35,11 +26,16 @@ describe("parseWkt", () => {
   });
   it("point", () => {
     expect(parseWkt("POINT EMPTY")).toEqual(null);
-
+    reversible("POINT (1 20)", {
+      type: "Point",
+      coordinates: [1, 20],
+    });
     reversible("POINT (-1.5 20.5)", {
       type: "Point",
       coordinates: [-1.5, 20.5],
     });
+  });
+  it("geometrycollection", () => {
     reversible("GEOMETRYCOLLECTION(POINT (-1.5 20.5))", {
       type: "GeometryCollection",
       geometries: [
@@ -49,6 +45,8 @@ describe("parseWkt", () => {
         },
       ],
     });
+  });
+  it("multipoint", () => {
     reversible("POINT Z (-1.5 20.5 5)", {
       type: "Point",
       coordinates: [-1.5, 20.5, 5],
@@ -60,6 +58,8 @@ describe("parseWkt", () => {
         [3, 4],
       ],
     });
+  });
+  it("linestring", () => {
     reversible("LINESTRING (1 2,3 4)", {
       type: "LineString",
       coordinates: [
@@ -67,7 +67,9 @@ describe("parseWkt", () => {
         [3, 4],
       ],
     });
-    expect(parseWkt("MULTILINESTRING ((1 2, 3 4, 1 2))")).toEqual({
+  });
+  it("multilinestring", () => {
+    reversible("MULTILINESTRING ((1 2,3 4,1 2))", {
       type: "MultiLineString",
       coordinates: [
         [
@@ -77,7 +79,9 @@ describe("parseWkt", () => {
         ],
       ],
     });
-    expect(parseWkt("MULTIPOLYGON (((1 2, 3 4, 1 2)))")).toEqual({
+  });
+  it("multipolygon", () => {
+    reversible("MULTIPOLYGON (((1 2,3 4,1 2)))", {
       type: "MultiPolygon",
       coordinates: [
         [
@@ -89,7 +93,19 @@ describe("parseWkt", () => {
         ],
       ],
     });
-    expect(parseWkt("POLYGON ((1 2, 3 4, 1 2))")).toEqual({
+  });
+  it("polygon", () => {
+    reversible("POLYGON Z ((1 2 10,3 4 10,1 2 10))", {
+      type: "Polygon",
+      coordinates: [
+        [
+          [1, 2, 10],
+          [3, 4, 10],
+          [1, 2, 10],
+        ],
+      ],
+    });
+    reversible("POLYGON ((1 2,3 4,1 2))", {
       type: "Polygon",
       coordinates: [
         [

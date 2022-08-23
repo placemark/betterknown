@@ -5,6 +5,9 @@ import type {
   LineString,
   MultiPoint,
   GeometryCollection,
+  Polygon,
+  MultiPolygon,
+  MultiLineString,
 } from "geojson";
 
 type WktOptions = ZM & {
@@ -314,8 +317,7 @@ const parseWktGeometryCollection: GeometryParser = (value, options) => {
 };
 
 function stringifyCoordinate(point: Position): string {
-  const coordinates = point.join(" ");
-  return coordinates;
+  return point.join(" ");
 }
 
 function stringifyZM(position: Position): string {
@@ -331,6 +333,7 @@ function stringifyPoint(point: Point): string {
   if (point.coordinates === null) {
     return "POINT EMPTY";
   }
+
   return `POINT${stringifyZM(point.coordinates)}(${stringifyCoordinate(
     point.coordinates
   )})`;
@@ -372,6 +375,44 @@ function stringifyGeometryCollection(geometry: GeometryCollection): string {
   return `GEOMETRYCOLLECTION${innerWkt}`;
 }
 
+function stringifyMultiLineString(geometry: MultiLineString): string {
+  if (geometry.coordinates === null) {
+    return "MULTILINESTRING EMPTY";
+  }
+
+  const innerWkt = `(${geometry.coordinates.map((ring) => {
+    return `(${ring.map((coordinate) => stringifyCoordinate(coordinate))})`;
+  })})`;
+
+  return `MULTILINESTRING${stringifyZM(geometry.coordinates[0][0])}${innerWkt}`;
+}
+
+function stringifyPolygon(geometry: Polygon): string {
+  if (geometry.coordinates === null) {
+    return "POLYGON EMPTY";
+  }
+
+  const innerWkt = `(${geometry.coordinates.map((ring) => {
+    return `(${ring.map((coordinate) => stringifyCoordinate(coordinate))})`;
+  })})`;
+
+  return `POLYGON${stringifyZM(geometry.coordinates[0][0])}${innerWkt}`;
+}
+
+function stringifyMultiPolygon(geometry: MultiPolygon): string {
+  if (geometry.coordinates === null) {
+    return "MULTIPOLYGON EMPTY";
+  }
+
+  const innerWkt = `(${geometry.coordinates.map((polygon) => {
+    return `(${polygon.map((ring) => {
+      return `(${ring.map((coordinate) => stringifyCoordinate(coordinate))})`;
+    })})`;
+  })})`;
+
+  return `MULTIPOLYGON${stringifyZM(geometry.coordinates[0][0][0])}${innerWkt}`;
+}
+
 export function stringifyGeoJSON(geometry: Geometry): string {
   switch (geometry.type) {
     case "Point":
@@ -382,8 +423,12 @@ export function stringifyGeoJSON(geometry: Geometry): string {
       return stringifyMultiPoint(geometry);
     case "GeometryCollection":
       return stringifyGeometryCollection(geometry);
-    default:
-      return "";
+    case "Polygon":
+      return stringifyPolygon(geometry);
+    case "MultiPolygon":
+      return stringifyMultiPolygon(geometry);
+    case "MultiLineString":
+      return stringifyMultiLineString(geometry);
   }
 }
 
