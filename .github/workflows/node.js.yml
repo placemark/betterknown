@@ -23,7 +23,7 @@ jobs:
         uses: bahmutov/npm-install@v1
 
       - name: Test
-        run: yarn test --ci --coverage
+        run: yarn test --coverage
 
       - name: Build
         run: yarn build
