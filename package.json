@@ -6,6 +6,11 @@
   "dependencies": {
     "@types/geojson": "^7946.0.10"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/placemark/betterknown.git"
+  },
+  "homepage": "https://github.com/placemark/betterknown",
   "files": [
     "dist"
   ],
