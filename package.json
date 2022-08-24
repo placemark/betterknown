@@ -1,6 +1,6 @@
 {
   "name": "betterknown",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "./dist/betterknown.umd.js",
   "license": "MIT",
   "dependencies": {
