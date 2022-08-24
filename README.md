@@ -16,3 +16,23 @@ TypeScript from day one.
 - **No dependencies** - tiny bundle
 - Parse WKT to GeoJSON, stringify GeoJSON to WKT
 - Optional reprojection of EWKT to GeoJSON's required WGS84 coordinate system
+
+### [📕 Documentation](https://placemark.github.io/betterknown/)
+
+### Example
+
+```ts
+import { wktToGeoJSON, geoJSONToWkt } from "betterknown";
+import proj4 from "proj4";
+
+// Converting & reprojecting an EWKT string
+wktToGeoJSON(`SRID=3857;POINT(-400004.3 60000.1)`, {
+  proj: proj4,
+});
+
+// Converting GeoJSON to WKT
+geoJSONToWkt({
+  type: 'Point',
+  coordinates: [1, 2]
+});
+```
