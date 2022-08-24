@@ -11,7 +11,7 @@
     "build": "vite build && tsc --declaration --emitDeclarationOnly",
     "doc": "typedoc --options ./typedoc.json",
     "prepare": "npm run build && npm run doc",
-    "test": "vitest test"
+    "test": "vitest run"
   },
   "devDependencies": {
     "@vitest/coverage-c8": "^0.22.1",
