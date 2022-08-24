@@ -16,8 +16,66 @@ interface ZM {
   hasM: boolean;
 }
 
+/**
+ * User-facing options for the WKT parser.
+ */
 export interface WktUserOptions {
+  /**
+   * By default, this is true.
+   *
+   * WKT has a concept of an 'EMPTY' geometry: for example,
+   * `POINT EMPTY`.
+   *
+   * GeoJSON has two similar representations:
+   *
+   * 1. `null` as the geometry. This allows a GeoJSON Feature
+   *    to have no geometry attached to it. However, it also
+   *    does not indicate what kind of geometry would be attached
+   *    to it. It's not a null Point, it's just null.
+   * 2. An empty `coordinates` array. This is rarer than null
+   *    geometries, and makes it possible to reflect the exact
+   *    idea from WKT. However, this is much rarer in practice -
+   *    depending on what you're doing with the GeoJSON you generate,
+   *    empty coordinates arrays might trip up another parser.
+   *
+   * By default, we encode `EMPTY` as `null` geometries. This
+   * is more likely to work with GeoJSON-understanding systems.
+   *
+   * The disadvantage of `EMPTY` as `null` is that it isn't symmetrical:
+   * a WKT string like `POINT EMPTY` will translate to `null`,
+   * but if you convert `null` back to WKT, it won't be represented
+   * as anything, because there's no indication of its geometry type.
+   */
   emptyAsNull?: true;
+
+  /**
+   * An optional method for reprojecting EWKT strings.
+   *
+   * The GeoJSON standard does not support alternative coordinate
+   * systems: all GeoJSON is longitude, latitude. EWKT _does_ support
+   * alternative coordinate systems, so in order to parse it into
+   * GeoJSON we also need to reproject those coordinates.
+   *
+   * A common way to do this would be to use proj4js. That module
+   * exposes a method you can use as `proj`:
+   *
+   * ```ts
+   * import proj4 from "proj4";
+   *
+   * wktToGeoJSON(`SRID=3857;POINT(-400004.3 60000.1)`, {
+   *   proj: proj4,
+   * })
+   * ```
+   *
+   * This will reproject coordinates as they're being converted to GeoJSON.
+   *
+   * This method is optional. Without it, all WKT features will work, and
+   * EWKT features that are already in the GeoJSON required coordinate system
+   * (in this case, EPSG:4326) will also work.
+   *
+   * However, if you convert an EWKT string with an alternative projection and
+   * you _haven't_ specified a proj function, then the parsing will fail.
+   */
   proj?: (
     fromProjection: string,
     toProjection: string,
@@ -484,7 +542,18 @@ function wktToGeoJSONinner(wktParser: WktParser, userOptions: WktUserOptions) {
 }
 
 /**
- * Stringify GeoJSON as WKT
+ * Stringify GeoJSON as WKT. There are no options to this
+ * conversion. Some finer notes on the conversion:
+ *
+ * - GeoJSON does not support alternative projections, so the
+ *   output of this method is always WKT, never EWKT.
+ * - GeoJSON technically supports geometries with mixed
+ *   coordinates: some coordinates can have a Z element
+ *   for altitude, some will not. WKT does not: the Z (or M)
+ *   element is part of the geometry's name.
+ * - Geometries with empty coordinates arrays will be
+ *   stringified as "EMPTY" WKT geometries. This is technically
+ *   valid, but rare, for GeoJSON.
  */
 export function geoJSONToWkt(geometry: Geometry): string {
   switch (geometry.type) {
@@ -509,10 +578,19 @@ export function geoJSONToWkt(geometry: Geometry): string {
  * Parse WKT input into GeoJSON output.
  */
 export function wktToGeoJSON(
-  value: string,
+  /**
+   * The WKT or EWKT content as a string.
+   */
+  wkt: string,
+  /**
+   * Optional options: consult the type documentation for this.
+   * You’ll need to configure options if you want a different
+   * representation of empty geometries or to plug in a method
+   * of reprojecting EWKT.
+   */
   options: WktUserOptions = {
     emptyAsNull: true,
   }
 ) {
-  return wktToGeoJSONinner(new WktParser(value), options);
+  return wktToGeoJSONinner(new WktParser(wkt), options);
 }

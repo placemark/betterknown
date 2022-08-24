@@ -15,4 +15,4 @@ TypeScript from day one.
 - 100% TypeScript
 - **No dependencies** - tiny bundle
 - Parse WKT to GeoJSON, stringify GeoJSON to WKT
-- Optional reprojection of EWKT
+- Optional reprojection of EWKT to GeoJSON's required WGS84 coordinate system

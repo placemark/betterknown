@@ -17,7 +17,19 @@
 <ul class="tsd-signatures tsd-kind-function">
 <li class="tsd-signature tsd-anchor-link" id="geoJSONToWkt">geoJSONTo<wbr/>Wkt<span class="tsd-signature-symbol">(</span>geometry<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Geometry</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><a href="#geoJSONToWkt" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Stringify GeoJSON as WKT</p>
+<div class="tsd-comment tsd-typography"><p>Stringify GeoJSON as WKT. There are no options to this
+conversion. Some finer notes on the conversion:</p>
+<ul>
+<li>GeoJSON does not support alternative projections, so the
+output of this method is always WKT, never EWKT.</li>
+<li>GeoJSON technically supports geometries with mixed
+coordinates: some coordinates can have a Z element
+for altitude, some will not. WKT does not: the Z (or M)
+element is part of the geometry&#39;s name.</li>
+<li>Geometries with empty coordinates arrays will be
+stringified as &quot;EMPTY&quot; WKT geometries. This is technically
+valid, but rare, for GeoJSON.</li>
+</ul>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -26,7 +38,7 @@
 <h5>geometry: <span class="tsd-signature-type">Geometry</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/placemark/betterknown/blob/656126e/index.ts#L489">index.ts:489</a></li></ul></aside></li></ul></section></div>
+<li>Defined in <a href="https://github.com/placemark/betterknown/blob/97e1758/index.ts#L558">index.ts:558</a></li></ul></aside></li></ul></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
