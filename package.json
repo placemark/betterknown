@@ -1,7 +1,7 @@
 {
   "name": "betterknown",
   "version": "1.0.1",
-  "main": "index.js",
+  "main": "./dist/betterknown.umd.js",
   "license": "MIT",
   "dependencies": {
     "@types/geojson": "^7946.0.10"
@@ -26,10 +26,11 @@
     "vitest": "^0.22.1",
     "wkx": "^0.5.0"
   },
+  "module": "./dist/betterknown.mjs",
   "exports": {
     ".": {
       "import": "./dist/betterknown.mjs",
-      "require": "./dist/betterknown.umd.cjs"
+      "require": "./dist/betterknown.umd.js"
     }
   },
   "types": "./dist/index.d.ts",
