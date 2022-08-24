@@ -1,0 +1,5 @@
+{
+    "entryPoints": ["./index.ts"],
+    "entryPointStrategy":"Expand",
+    "out": "docs"
+}
