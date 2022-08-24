@@ -1,12 +1,14 @@
 {
   "name": "betterknown",
-  "version": "1.0.0",
+  "version": "1.0.1-0",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
     "@types/geojson": "^7946.0.10"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "vite build && tsc --declaration --emitDeclarationOnly",
     "doc": "typedoc --options ./typedoc.json",
