@@ -6,6 +6,7 @@
   "dependencies": {
     "@types/geojson": "^7946.0.10"
   },
+  "files": ["dist"],
   "scripts": {
     "build": "vite build && tsc --declaration --emitDeclarationOnly",
     "doc": "typedoc --options ./typedoc.json",
