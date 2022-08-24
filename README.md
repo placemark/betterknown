@@ -1,5 +1,7 @@
 # betterknown
 
+_betterknown development is supported by 🌎 [placemark.io](https://www.placemark.io/)_
+
 I wrote [wellknown](https://github.com/mapbox/wellknown), a WKT parser and stringifier,
 eons ago. It's still sort of popular but nobody maintained it after I left Mapbox.
 
