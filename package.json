@@ -23,7 +23,7 @@
   "scripts": {
     "build": "vite build && tsc --declaration --emitDeclarationOnly",
     "doc": "typedoc --options ./typedoc.json",
-    "prepare": "npm run build && npm run doc",
+    "prepare": "npm run build",
     "test": "vitest run"
   },
   "dependencies": {
