@@ -1,16 +1,22 @@
 {
   "name": "betterknown",
   "version": "1.0.3",
-  "main": "./dist/betterknown.umd.js",
-  "license": "MIT",
-  "dependencies": {
-    "@types/geojson": "^7946.0.10"
-  },
+  "homepage": "https://github.com/placemark/betterknown",
   "repository": {
     "type": "git",
     "url": "git://github.com/placemark/betterknown.git"
   },
-  "homepage": "https://github.com/placemark/betterknown",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "import": "./dist/betterknown.mjs",
+      "require": "./dist/betterknown.umd.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/betterknown.umd.js",
+  "module": "./dist/betterknown.mjs",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -19,6 +25,9 @@
     "doc": "typedoc --options ./typedoc.json",
     "prepare": "npm run build && npm run doc",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "@types/geojson": "^7946.0.10"
   },
   "devDependencies": {
     "@vitest/coverage-c8": "^0.22.1",
@@ -31,14 +40,6 @@
     "vitest": "^0.22.1",
     "wkx": "^0.5.0"
   },
-  "module": "./dist/betterknown.mjs",
-  "exports": {
-    ".": {
-      "import": "./dist/betterknown.mjs",
-      "require": "./dist/betterknown.umd.js"
-    }
-  },
-  "types": "./dist/index.d.ts",
   "volta": {
     "node": "18.7.0"
   }
