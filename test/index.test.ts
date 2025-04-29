@@ -2,7 +2,7 @@ import { WktUserOptions, geoJSONToWkt, wktToGeoJSON } from "./index";
 import { describe, it, expect } from "vitest";
 import { Geometry } from "geojson";
 import proj4 from "proj4";
-import { EMPTY, WKT_GEOMETRY_TYPES, WKTGeometryType } from "../constants";
+import { EMPTY, WKT_GEOMETRY_TYPES, WKTGeometryType, ZZM } from "../constants";
 
 const WKT_GEOMETRY_TYPES_MAP = WKT_GEOMETRY_TYPES.reduce((map, type) => {
   map[type] = type;
@@ -11,8 +11,8 @@ const WKT_GEOMETRY_TYPES_MAP = WKT_GEOMETRY_TYPES.reduce((map, type) => {
 
 const dictionary = {
   Srid: "SRID",
-  Z: "Z",
-  Empty: "EMPTY",
+  Z: ZZM[1],
+  Empty: EMPTY,
 }
 type Dictionary = typeof dictionary;
 

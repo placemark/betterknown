@@ -1,4 +1,4 @@
-import { WKT_GEOMETRY_TYPES, EMPTY } from "../constants";
+import { WKT_GEOMETRY_TYPES } from "../constants";
 import type { WKTGeometryType } from "../constants";
 import { testCases } from "./index.test";
 
