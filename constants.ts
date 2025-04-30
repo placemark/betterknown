@@ -1,12 +1,15 @@
 export const WKT_GEOMETRY_TYPES = [
-  "POINT",
-  "LINESTRING",
-  "POLYGON",
-  "MULTIPOINT",
-  "MULTILINESTRING",
-  "MULTIPOLYGON",
-  "GEOMETRYCOLLECTION",
+  "Point",
+  "LineString",
+  "Polygon",
+  "MultiPoint",
+  "MultiLineString",
+  "MultiPolygon",
+  "GeometryCollection",
 ] as const;
+
+// Create a type from WKT_GEOMETRY_TYPES
+export type WKTGeometryType = typeof WKT_GEOMETRY_TYPES[number];
 
 export const ZZM = ["ZM", "Z", "M"];
 

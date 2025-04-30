@@ -15,7 +15,12 @@ function reversible(
   expect(geometry).not.toBeNull();
   const wkt = geoJSONToWkt(geometry!);
   expect(geometry).toEqual(geometry1);
-  expect(wkt).toEqual(wkt1);
+    /**
+    * The passed WKT is case insensitive,
+    * but the output of geoJSONToWkt is upper case.
+    * Therefore we cast the returned WKT to upper case.
+    */
+    expect(wkt).toEqual(wkt1.toUpperCase());
 }
 
 describe("parsing and stringifying", () => {
@@ -212,4 +217,187 @@ describe("parsing and stringifying", () => {
       type: "Point",
     });
   });
+
+});
+
+describe("case insensitivity", () => {
+  describe("testing lowercase", () => {
+    test.each([
+      ["point empty",
+        {
+          type: "Point",
+          coordinates: [],
+        },
+        {
+          emptyAsNull: false,
+        }
+      ],
+      ["point (-1.5 20.5)",
+        {
+          type: "Point",
+          coordinates: [-1.5, 20.5],
+        }
+      ],
+      ["polygon empty",
+        {
+          type: "Polygon",
+          coordinates: [],
+        },
+        {
+          emptyAsNull: false,
+        }
+      ],
+      ["polygon z ((1.3 -2.4 10.5,3 4 10,1 2 10))",
+        {
+          type: "Polygon",
+          coordinates: [
+            [
+              [1.3, -2.4, 10.5],
+              [3, 4, 10],
+              [1, 2, 10],
+            ],
+          ],
+        }
+      ],
+      ["geometrycollection empty",
+        {
+          type: "GeometryCollection",
+          geometries: [],
+        },
+        {
+          emptyAsNull: false,
+        }
+      ],
+      ["geometrycollection(point (-1.5 20.5))",
+        {
+          type: "GeometryCollection",
+          geometries: [
+            {
+              type: "Point",
+              coordinates: [-1.5, 20.5],
+            },
+          ],
+        }
+      ],
+      ["geometrycollection empty",
+        {
+          type: "GeometryCollection",
+          geometries: [],
+        },
+        {
+          emptyAsNull: false,
+        }
+      ],
+      ["geometrycollection(point (-1.5 20.5))",
+        {
+          type: "GeometryCollection",
+          geometries: [
+            {
+              type: "Point",
+              coordinates: [-1.5, 20.5],
+            },
+          ],
+        }
+      ],
+    ] as [string, Geometry, WktUserOptions?][])('parse using lowercase: "%s"',
+      (wkt, expected, userOptions) => reversible(wkt, expected, userOptions)
+    );
+
+    it("ewkt", () => {
+      expect(wktToGeoJSON(`srid=4326;point(-44.3 60.1)`)).toEqual({
+        coordinates: [-44.3, 60.1],
+        type: "Point",
+      });
+    });
+  })
+
+  describe("testing pascalcase", () => {
+    test.each([
+      ["Point Empty",
+        {
+          type: "Point",
+          coordinates: [],
+        },
+        {
+          emptyAsNull: false,
+        }
+      ],
+      ["Point (-1.5 20.5)",
+        {
+          type: "Point",
+          coordinates: [-1.5, 20.5],
+        }
+      ],
+      ["Polygon Empty",
+        {
+          type: "Polygon",
+          coordinates: [],
+        },
+        {
+          emptyAsNull: false,
+        }
+      ],
+      ["Polygon Z ((1.3 -2.4 10.5,3 4 10,1 2 10))",
+        {
+          type: "Polygon",
+          coordinates: [
+            [
+              [1.3, -2.4, 10.5],
+              [3, 4, 10],
+              [1, 2, 10],
+            ],
+          ],
+        }
+      ],
+      ["GeometryCollection empty",
+        {
+          type: "GeometryCollection",
+          geometries: [],
+        },
+        {
+          emptyAsNull: false,
+        }
+      ],
+      ["GeometryCollection(Point (-1.5 20.5))",
+        {
+          type: "GeometryCollection",
+          geometries: [
+            {
+              type: "Point",
+              coordinates: [-1.5, 20.5],
+            },
+          ],
+        }
+      ],
+      ["GeometryCollection empty",
+        {
+          type: "GeometryCollection",
+          geometries: [],
+        },
+        {
+          emptyAsNull: false,
+        }
+      ],
+      ["GeometryCollection(Point (-1.5 20.5))",
+        {
+          type: "GeometryCollection",
+          geometries: [
+            {
+              type: "Point",
+              coordinates: [-1.5, 20.5],
+            },
+          ],
+        }
+      ],
+    ] as [string, Geometry, WktUserOptions?][])('parse using lowercase: "%s"',
+      (wkt, expected, userOptions) => reversible(wkt, expected, userOptions)
+    );
+
+    it("ewkt", () => {
+      expect(wktToGeoJSON(`Srid=4326;Point(-44.3 60.1)`)).toEqual({
+        coordinates: [-44.3, 60.1],
+        type: "Point",
+      });
+    });
+  })
 });

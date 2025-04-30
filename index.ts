@@ -95,7 +95,7 @@ class WktParser {
   position: number;
 
   constructor(value: string) {
-    this.value = value;
+    this.value = value.toUpperCase();
     this.position = 0;
   }
 
@@ -103,8 +103,9 @@ class WktParser {
     this.skipWhitespaces();
 
     for (const token of tokens) {
-      if (this.value.startsWith(token, this.position)) {
-        this.position += token.length;
+      const caseInsensitiveToken = token.toUpperCase();
+      if (this.value.startsWith(caseInsensitiveToken, this.position)) {
+        this.position += caseInsensitiveToken.length;
         return token;
       }
     }
@@ -176,11 +177,11 @@ class WktParser {
     let match: RegExpMatchArray | null;
 
     if (options.hasZ && options.hasM) {
-      match = this.matchRegex([/^(\S*)\s+(\S*)\s+(\S*)\s+([^\s,)]*)/]);
+      match = this.matchRegex([/^(\S*)\s+(\S*)\s+(\S*)\s+([^\s,)]*)/i]);
     } else if (options.hasZ || options.hasM) {
-      match = this.matchRegex([/^(\S*)\s+(\S*)\s+([^\s,)]*)/]);
+      match = this.matchRegex([/^(\S*)\s+(\S*)\s+([^\s,)]*)/i]);
     } else {
-      match = this.matchRegex([/^(\S*)\s+([^\s,)]*)/]);
+      match = this.matchRegex([/^(\S*)\s+([^\s,)]*)/i]);
     }
 
     if (!match) throw new Error("Expected coordinates");
@@ -510,7 +511,7 @@ function stringifyMultiPolygon(geometry: MultiPolygon): string {
 function wktToGeoJSONinner(wktParser: WktParser, userOptions: WktUserOptions) {
   let srid: number | null = null;
 
-  const match = wktParser.matchRegex([/^SRID=(\d+);/]);
+  const match = wktParser.matchRegex([/^SRID=(\d+);/i]);
   if (match) srid = parseInt(match[1], 10);
 
   const geometryType = wktParser.matchType();
@@ -524,19 +525,19 @@ function wktToGeoJSONinner(wktParser: WktParser, userOptions: WktUserOptions) {
   };
 
   switch (geometryType) {
-    case "POINT":
+    case "Point":
       return parseWktPoint(wktParser, options);
-    case "LINESTRING":
+    case "LineString":
       return parseWktLineString(wktParser, options);
-    case "POLYGON":
+    case "Polygon":
       return parseWktPolygon(wktParser, options);
-    case "MULTIPOINT":
+    case "MultiPoint":
       return parseWktMultiPoint(wktParser, options);
-    case "MULTILINESTRING":
+    case "MultiLineString":
       return parseWktMultiLineString(wktParser, options);
-    case "MULTIPOLYGON":
+    case "MultiPolygon":
       return parseWktMultiPolygon(wktParser, options);
-    case "GEOMETRYCOLLECTION":
+    case "GeometryCollection":
       return parseWktGeometryCollection(wktParser, options);
   }
 }
