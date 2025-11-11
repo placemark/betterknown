@@ -1,13 +1,13 @@
 import type {
   Geometry,
-  Position,
-  Point,
-  LineString,
-  MultiPoint,
   GeometryCollection,
-  Polygon,
-  MultiPolygon,
+  LineString,
   MultiLineString,
+  MultiPoint,
+  MultiPolygon,
+  Point,
+  Polygon,
+  Position,
 } from "geojson";
 import { EMPTY, WKT_GEOMETRY_TYPES, ZZM } from "./constants";
 
@@ -79,7 +79,7 @@ export interface WktUserOptions {
   proj?: (
     fromProjection: string,
     toProjection: string,
-    coordinate: Position
+    coordinate: Position,
   ) => Position;
 }
 
@@ -195,22 +195,22 @@ class WktParser {
             parseFloat(match[4]),
           ]
         : options.hasZ
-        ? [parseFloat(match[1]), parseFloat(match[2]), parseFloat(match[3])]
-        : options.hasM
-        ? [
-            parseFloat(match[1]),
-            parseFloat(match[2]),
-            // undefined,
-            // parseFloat(match[3]),
-          ]
-        : [parseFloat(match[1]), parseFloat(match[2])];
+          ? [parseFloat(match[1]), parseFloat(match[2]), parseFloat(match[3])]
+          : options.hasM
+            ? [
+                parseFloat(match[1]),
+                parseFloat(match[2]),
+                // undefined,
+                // parseFloat(match[3]),
+              ]
+            : [parseFloat(match[1]), parseFloat(match[2])];
 
     if (options.srid && options.srid !== 4326) {
       if (options.proj) {
         return options.proj(`EPSG:${options.srid}`, "EPSG:4326", position);
       } else {
         throw new Error(
-          `EWKT data in an unknown SRID (${options.srid}) was provided, but a proj function was not`
+          `EWKT data in an unknown SRID (${options.srid}) was provided, but a proj function was not`,
         );
       }
     }
@@ -428,7 +428,7 @@ function stringifyPoint(point: Point): string {
   }
 
   return `POINT${stringifyZM(point.coordinates)}(${stringifyCoordinate(
-    point.coordinates
+    point.coordinates,
   )})`;
 }
 
@@ -438,7 +438,7 @@ function stringifyMultiPoint(geometry: MultiPoint): string {
   }
 
   return `MULTIPOINT${stringifyZM(
-    geometry.coordinates[0]
+    geometry.coordinates[0],
   )}(${geometry.coordinates
     .map((coordinate) => stringifyCoordinate(coordinate))
     .join(",")})`;
@@ -504,7 +504,7 @@ function stringifyMultiPolygon(geometry: MultiPolygon): string {
   })})`;
 
   return `MULTIPOLYGON${stringifyZM(
-    geometry.coordinates[0]?.[0]?.[0]
+    geometry.coordinates[0]?.[0]?.[0],
   )}${innerWkt}`;
 }
 
@@ -591,7 +591,7 @@ export function wktToGeoJSON(
    */
   options: WktUserOptions = {
     emptyAsNull: true,
-  }
+  },
 ) {
   return wktToGeoJSONinner(new WktParser(wkt), options);
 }

@@ -9,7 +9,7 @@ export const WKT_GEOMETRY_TYPES = [
 ] as const;
 
 // Create a type from WKT_GEOMETRY_TYPES
-export type WKTGeometryType = typeof WKT_GEOMETRY_TYPES[number];
+export type WKTGeometryType = (typeof WKT_GEOMETRY_TYPES)[number];
 
 export const ZZM = ["ZM", "Z", "M"];
 
