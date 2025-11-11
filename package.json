@@ -27,16 +27,16 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@types/geojson": "^7946.0.10"
+    "@biomejs/biome": "^2.3.5",
+    "@types/geojson": "^7946.0.16"
   },
   "devDependencies": {
     "@vitest/coverage-c8": "^0.22.1",
     "benchmark": "^2.1.4",
-    "prettier": "^2.7.1",
-    "proj4": "^2.8.0",
-    "typedoc": "^0.23.10",
-    "typescript": "^4.7.4",
-    "vite": "^3.0.9",
+    "proj4": "^2.19.10",
+    "typedoc": "^0.23.28",
+    "typescript": "^4.9.5",
+    "vite": "^3.2.11",
     "vitest": "^0.22.1",
     "wkx": "^0.5.0"
   },

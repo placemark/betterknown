@@ -1,33 +1,33 @@
-import { WktUserOptions, geoJSONToWkt, wktToGeoJSON } from "./index";
-import { test, describe, it, expect } from "vitest";
-import { Geometry } from "geojson";
+import type { Geometry } from "geojson";
 import proj4 from "proj4";
+import { describe, expect, it, test } from "vitest";
 import { WKT_GEOMETRY_TYPES } from "../constants";
+import { geoJSONToWkt, type WktUserOptions, wktToGeoJSON } from "./index";
 
 function reversible(
   wkt1: string,
   geometry1: Geometry,
   userOptions: WktUserOptions = {
     emptyAsNull: true,
-  }
+  },
 ) {
   const geometry = wktToGeoJSON(wkt1, userOptions);
   expect(geometry).not.toBeNull();
   const wkt = geoJSONToWkt(geometry!);
   expect(geometry).toEqual(geometry1);
-    /**
-    * The passed WKT is case insensitive,
-    * but the output of geoJSONToWkt is upper case.
-    * Therefore we cast the returned WKT to upper case.
-    */
-    expect(wkt).toEqual(wkt1.toUpperCase());
+  /**
+   * The passed WKT is case insensitive,
+   * but the output of geoJSONToWkt is upper case.
+   * Therefore we cast the returned WKT to upper case.
+   */
+  expect(wkt).toEqual(wkt1.toUpperCase());
 }
 
 describe("parsing and stringifying", () => {
   it("overflow resistance", () => {
     const bigString = `MULTIPOLYGON (((${Array.from(
       { length: 1000 },
-      (_, i) => `${i}, ${i}`
+      (_, i) => `${i}, ${i}`,
     ).join(",")})))`;
     expect(wktToGeoJSON(bigString)).toHaveProperty("type", "MultiPolygon");
   });
@@ -37,7 +37,7 @@ describe("parsing and stringifying", () => {
       expect(
         wktToGeoJSON(`${name} EMPTY`, {
           emptyAsNull: false,
-        })
+        }),
       ).toBeTruthy();
     }
   });
@@ -50,7 +50,7 @@ describe("parsing and stringifying", () => {
       },
       {
         emptyAsNull: false,
-      }
+      },
     );
     reversible("POINT (1 20)", {
       type: "Point",
@@ -70,7 +70,7 @@ describe("parsing and stringifying", () => {
       },
       {
         emptyAsNull: false,
-      }
+      },
     );
     reversible("GEOMETRYCOLLECTION(POINT (-1.5 20.5))", {
       type: "GeometryCollection",
@@ -95,7 +95,7 @@ describe("parsing and stringifying", () => {
       },
       {
         emptyAsNull: false,
-      }
+      },
     );
     reversible("MULTIPOINT (1 2,3 4)", {
       type: "MultiPoint",
@@ -121,7 +121,7 @@ describe("parsing and stringifying", () => {
       },
       {
         emptyAsNull: false,
-      }
+      },
     );
   });
   it("multilinestring", () => {
@@ -143,7 +143,7 @@ describe("parsing and stringifying", () => {
       },
       {
         emptyAsNull: false,
-      }
+      },
     );
   });
   it("multipolygon", () => {
@@ -167,7 +167,7 @@ describe("parsing and stringifying", () => {
       },
       {
         emptyAsNull: false,
-      }
+      },
     );
   });
   it("polygon", () => {
@@ -199,7 +199,7 @@ describe("parsing and stringifying", () => {
       },
       {
         emptyAsNull: false,
-      }
+      },
     );
   });
 
@@ -211,43 +211,46 @@ describe("parsing and stringifying", () => {
     expect(
       wktToGeoJSON(`SRID=3857;POINT(-400004.3 60000.1)`, {
         proj: proj4,
-      })
+      }),
     ).toEqual({
       coordinates: [-3.5932997640353026, 0.5389821193537617],
       type: "Point",
     });
   });
-
 });
 
 describe("case insensitivity", () => {
   describe("testing lowercase", () => {
     test.each([
-      ["point empty",
+      [
+        "point empty",
         {
           type: "Point",
           coordinates: [],
         },
         {
           emptyAsNull: false,
-        }
+        },
       ],
-      ["point (-1.5 20.5)",
+      [
+        "point (-1.5 20.5)",
         {
           type: "Point",
           coordinates: [-1.5, 20.5],
-        }
+        },
       ],
-      ["polygon empty",
+      [
+        "polygon empty",
         {
           type: "Polygon",
           coordinates: [],
         },
         {
           emptyAsNull: false,
-        }
+        },
       ],
-      ["polygon z ((1.3 -2.4 10.5,3 4 10,1 2 10))",
+      [
+        "polygon z ((1.3 -2.4 10.5,3 4 10,1 2 10))",
         {
           type: "Polygon",
           coordinates: [
@@ -257,18 +260,20 @@ describe("case insensitivity", () => {
               [1, 2, 10],
             ],
           ],
-        }
+        },
       ],
-      ["geometrycollection empty",
+      [
+        "geometrycollection empty",
         {
           type: "GeometryCollection",
           geometries: [],
         },
         {
           emptyAsNull: false,
-        }
+        },
       ],
-      ["geometrycollection(point (-1.5 20.5))",
+      [
+        "geometrycollection(point (-1.5 20.5))",
         {
           type: "GeometryCollection",
           geometries: [
@@ -277,18 +282,20 @@ describe("case insensitivity", () => {
               coordinates: [-1.5, 20.5],
             },
           ],
-        }
+        },
       ],
-      ["geometrycollection empty",
+      [
+        "geometrycollection empty",
         {
           type: "GeometryCollection",
           geometries: [],
         },
         {
           emptyAsNull: false,
-        }
+        },
       ],
-      ["geometrycollection(point (-1.5 20.5))",
+      [
+        "geometrycollection(point (-1.5 20.5))",
         {
           type: "GeometryCollection",
           geometries: [
@@ -297,10 +304,11 @@ describe("case insensitivity", () => {
               coordinates: [-1.5, 20.5],
             },
           ],
-        }
+        },
       ],
-    ] as [string, Geometry, WktUserOptions?][])('parse using lowercase: "%s"',
-      (wkt, expected, userOptions) => reversible(wkt, expected, userOptions)
+    ] as [string, Geometry, WktUserOptions?][])(
+      'parse using lowercase: "%s"',
+      (wkt, expected, userOptions) => reversible(wkt, expected, userOptions),
     );
 
     it("ewkt", () => {
@@ -309,35 +317,39 @@ describe("case insensitivity", () => {
         type: "Point",
       });
     });
-  })
+  });
 
   describe("testing pascalcase", () => {
     test.each([
-      ["Point Empty",
+      [
+        "Point Empty",
         {
           type: "Point",
           coordinates: [],
         },
         {
           emptyAsNull: false,
-        }
+        },
       ],
-      ["Point (-1.5 20.5)",
+      [
+        "Point (-1.5 20.5)",
         {
           type: "Point",
           coordinates: [-1.5, 20.5],
-        }
+        },
       ],
-      ["Polygon Empty",
+      [
+        "Polygon Empty",
         {
           type: "Polygon",
           coordinates: [],
         },
         {
           emptyAsNull: false,
-        }
+        },
       ],
-      ["Polygon Z ((1.3 -2.4 10.5,3 4 10,1 2 10))",
+      [
+        "Polygon Z ((1.3 -2.4 10.5,3 4 10,1 2 10))",
         {
           type: "Polygon",
           coordinates: [
@@ -347,18 +359,20 @@ describe("case insensitivity", () => {
               [1, 2, 10],
             ],
           ],
-        }
+        },
       ],
-      ["GeometryCollection empty",
+      [
+        "GeometryCollection empty",
         {
           type: "GeometryCollection",
           geometries: [],
         },
         {
           emptyAsNull: false,
-        }
+        },
       ],
-      ["GeometryCollection(Point (-1.5 20.5))",
+      [
+        "GeometryCollection(Point (-1.5 20.5))",
         {
           type: "GeometryCollection",
           geometries: [
@@ -367,18 +381,20 @@ describe("case insensitivity", () => {
               coordinates: [-1.5, 20.5],
             },
           ],
-        }
+        },
       ],
-      ["GeometryCollection empty",
+      [
+        "GeometryCollection empty",
         {
           type: "GeometryCollection",
           geometries: [],
         },
         {
           emptyAsNull: false,
-        }
+        },
       ],
-      ["GeometryCollection(Point (-1.5 20.5))",
+      [
+        "GeometryCollection(Point (-1.5 20.5))",
         {
           type: "GeometryCollection",
           geometries: [
@@ -387,10 +403,11 @@ describe("case insensitivity", () => {
               coordinates: [-1.5, 20.5],
             },
           ],
-        }
+        },
       ],
-    ] as [string, Geometry, WktUserOptions?][])('parse using lowercase: "%s"',
-      (wkt, expected, userOptions) => reversible(wkt, expected, userOptions)
+    ] as [string, Geometry, WktUserOptions?][])(
+      'parse using lowercase: "%s"',
+      (wkt, expected, userOptions) => reversible(wkt, expected, userOptions),
     );
 
     it("ewkt", () => {
@@ -399,5 +416,5 @@ describe("case insensitivity", () => {
         type: "Point",
       });
     });
-  })
+  });
 });
