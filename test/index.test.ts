@@ -217,6 +217,34 @@ describe("parsing and stringifying", () => {
       type: "Point",
     });
   });
+
+  it("geosparql-flavored iri", () => {
+    expect(
+      wktToGeoJSON(
+        `<http://www.opengis.net/def/crs/EPSG/0/4326> Point(33.95 -83.38)`,
+      ),
+    ).toEqual({
+      coordinates: [33.95, -83.38],
+      type: "Point",
+    });
+    expect(
+      wktToGeoJSON(
+        `<http://www.opengis.net/def/crs/EPSG/0/3857> POINT(-400004.3 60000.1)`,
+        {
+          proj: proj4,
+        },
+      ),
+    ).toEqual({
+      coordinates: [-3.5932997640353026, 0.5389821193537617],
+      type: "Point",
+    });
+
+    expect(() =>
+      wktToGeoJSON(`<http://www.google.com/> POINT(-400004.3 60000.1)`, {
+        proj: proj4,
+      }),
+    ).toThrowError(/GeoSPARQL IRI CRS not recognized/);
+  });
 });
 
 describe("case insensitivity", () => {

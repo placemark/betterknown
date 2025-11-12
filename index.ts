@@ -85,7 +85,7 @@ export interface WktUserOptions {
 
 type WktOptions = WktUserOptions &
   ZM & {
-    srid: number | null;
+    srid: string | number | null;
   };
 
 type GeometryParser = (arg0: WktParser, options: WktOptions) => Geometry | null;
@@ -205,9 +205,25 @@ class WktParser {
               ]
             : [parseFloat(match[1]), parseFloat(match[2])];
 
-    if (options.srid && options.srid !== 4326) {
+    if (
+      options.srid &&
+      options.srid !== 4326 &&
+      options.srid !== "http://www.opengis.net/def/crs/epsg/0/4326"
+    ) {
       if (options.proj) {
-        return options.proj(`EPSG:${options.srid}`, "EPSG:4326", position);
+        if (typeof options.srid === "number") {
+          return options.proj(`EPSG:${options.srid}`, "EPSG:4326", position);
+        } else {
+          const match = options.srid.match(
+            /http:\/\/www\.opengis\.net\/def\/crs\/epsg\/0\/(\d+)/,
+          );
+          if (match) {
+            return options.proj(`EPSG:${match[1]}`, "EPSG:4326", position);
+          }
+          throw new Error(
+            `GeoSPARQL IRI CRS not recognized: ${options.srid}. Only URLs like http://www.opengis.net/def/crs/EPSG/0/3857 are currently supported.`,
+          );
+        }
       } else {
         throw new Error(
           `EWKT data in an unknown SRID (${options.srid}) was provided, but a proj function was not`,
@@ -509,10 +525,15 @@ function stringifyMultiPolygon(geometry: MultiPolygon): string {
 }
 
 function wktToGeoJSONinner(wktParser: WktParser, userOptions: WktUserOptions) {
-  let srid: number | null = null;
+  let srid: string | number | null = null;
 
   const match = wktParser.matchRegex([/^SRID=(\d+);/i]);
-  if (match) srid = parseInt(match[1], 10);
+  if (match) {
+    srid = parseInt(match[1], 10);
+  } else {
+    const iriMatch = wktParser.matchRegex([/^<([^>]+)>/i]);
+    if (iriMatch) srid = iriMatch[1].toLowerCase();
+  }
 
   const geometryType = wktParser.matchType();
   const dimension = wktParser.matchDimension();
