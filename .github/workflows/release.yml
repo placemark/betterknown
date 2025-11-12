@@ -25,6 +25,9 @@ jobs:
         with:
           node-version: 24
 
+      - name: update npm
+        run: npm update -g npm
+
       - uses: pnpm/action-setup@v4
         with:
           version: 10
