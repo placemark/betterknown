@@ -2,7 +2,12 @@ import type { Geometry } from "geojson";
 import proj4 from "proj4";
 import { describe, expect, it, test } from "vitest";
 import { WKT_GEOMETRY_TYPES } from "../constants";
-import { geoJSONToWkt, type WktUserOptions, wktToGeoJSON } from "./index";
+import {
+  geoJSONToWkt,
+  wktToGeoJSON,
+  type Position,
+  type WktUserOptions,
+} from "./index";
 
 function reversible(
   wkt1: string,
@@ -224,14 +229,24 @@ describe("parsing and stringifying", () => {
         `<http://www.opengis.net/def/crs/EPSG/0/4326> Point(33.95 -83.38)`,
       ),
     ).toEqual({
-      coordinates: [33.95, -83.38],
+      coordinates: [-83.38, 33.95],
       type: "Point",
     });
     expect(
       wktToGeoJSON(
         `<http://www.opengis.net/def/crs/EPSG/0/3857> POINT(-400004.3 60000.1)`,
         {
-          proj: proj4,
+          proj: (fromProj: string, _toProj: string, position: Position) => {
+            const match = fromProj.match(
+              /http:\/\/www\.opengis\.net\/def\/crs\/epsg\/0\/(\d+)/,
+            );
+            if (match) {
+              return proj4(`EPSG:${match[1]}`, "EPSG:4326", position);
+            }
+            throw new Error(
+              `GeoSPARQL IRI CRS not recognized: ${fromProj}. Only URLs like http://www.opengis.net/def/crs/EPSG/0/3857 are currently supported.`,
+            );
+          },
         },
       ),
     ).toEqual({
@@ -243,7 +258,7 @@ describe("parsing and stringifying", () => {
       wktToGeoJSON(`<http://www.google.com/> POINT(-400004.3 60000.1)`, {
         proj: proj4,
       }),
-    ).toThrowError(/GeoSPARQL IRI CRS not recognized/);
+    ).toThrowError(/Could not parse to valid json/);
   });
 });
 

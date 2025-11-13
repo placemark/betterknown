@@ -16,6 +16,8 @@ interface ZM {
   hasM: boolean;
 }
 
+export type { Position };
+
 /**
  * User-facing options for the WKT parser.
  */
@@ -205,33 +207,31 @@ class WktParser {
               ]
             : [parseFloat(match[1]), parseFloat(match[2])];
 
-    if (
-      options.srid &&
-      options.srid !== 4326 &&
-      options.srid !== "http://www.opengis.net/def/crs/epsg/0/4326"
-    ) {
-      if (options.proj) {
-        if (typeof options.srid === "number") {
-          return options.proj(`EPSG:${options.srid}`, "EPSG:4326", position);
-        } else {
-          const match = options.srid.match(
-            /http:\/\/www\.opengis\.net\/def\/crs\/epsg\/0\/(\d+)/,
-          );
-          if (match) {
-            return options.proj(`EPSG:${match[1]}`, "EPSG:4326", position);
-          }
-          throw new Error(
-            `GeoSPARQL IRI CRS not recognized: ${options.srid}. Only URLs like http://www.opengis.net/def/crs/EPSG/0/3857 are currently supported.`,
-          );
-        }
+    if (!options.srid || options.srid === 4326) {
+      return position;
+    } else if (options.srid === "http://www.opengis.net/def/crs/epsg/0/4326") {
+      // GeoSPARQL-flavored WKT has 'literal axis order' which means that 4326 is
+      // flipped.
+      // https://docs.ogc.org/is/22-047r1/22-047r1.html#req_geometry_extension_wkt-axis-order
+      if (position.length === 3) {
+        return [position[1], position[0], position[2]];
       } else {
+        return [position[1], position[0]];
+      }
+    } else {
+      if (!options.proj) {
         throw new Error(
           `EWKT data in an unknown SRID (${options.srid}) was provided, but a proj function was not`,
         );
       }
+      return options.proj(
+        typeof options.srid === "string"
+          ? options.srid
+          : `EPSG:${options.srid}`,
+        "EPSG:4326",
+        position,
+      );
     }
-
-    return position;
   }
 
   matchCoordinates(options: WktOptions): Position[] {

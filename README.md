@@ -18,6 +18,7 @@ TypeScript from day one.
 - **No dependencies** - tiny bundle
 - Parse WKT to GeoJSON, stringify GeoJSON to WKT
 - Optional reprojection of EWKT to GeoJSON's required WGS84 coordinate system
+- Support for GeoSPARQL-flavored WKT
 
 ### [📕 Documentation](https://placemark.github.io/betterknown/)
 
@@ -38,3 +39,32 @@ geoJSONToWkt({
   coordinates: [1, 2]
 });
 ```
+
+### GeoSPARQL-flavored WKT
+
+This specification of WKT specifies [Literal Axis Order](https://docs.ogc.org/is/22-047r1/22-047r1.html#req_geometry_extension_wkt-axis-order),
+which diverges from WKT and EWKT.
+
+For example the input
+
+```
+<http://www.opengis.net/def/crs/EPSG/0/4326> Point(33.95 -83.38)
+```
+
+Produces this GeoJSON, with flipped coordinate order.
+
+```json
+{
+  "coordinates": [-83.38, 33.95],
+  "type": "Point",
+}
+```
+
+The behavior of Betterknown in this situation is:
+
+- If the IRI is exactly `http://www.opengis.net/def/crs/EPSG/0/4326`, then we flip coordinates.
+- If it is provided and not exactly that string, then we call the `proj` method, and
+  you're in charge of reprojection and flipping coordinates: the `proj` method will receive
+  the IRI string. Note that `proj4` does _not_ support the IRI-style projection URLs,
+  so you'll have to include custom code here. An example of using `proj4` with these URLs
+  is listed below.
