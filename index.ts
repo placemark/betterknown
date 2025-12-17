@@ -30,7 +30,7 @@ export interface WktStringifyOptions {
    * MULTIPOINT strings: MULTIPOINT((X Y),...)
    * instead of MULTIPOINT(X Y, ...)
    */
-  version?: "1.1.0" | "1.2.1";
+  version?: "1.1.0" | "1.2.0";
 }
 
 /**
