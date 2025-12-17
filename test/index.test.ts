@@ -4,9 +4,10 @@ import { describe, expect, it, test } from "vitest";
 import { WKT_GEOMETRY_TYPES } from "../constants";
 import {
   geoJSONToWkt,
-  wktToGeoJSON,
   type Position,
+  type WktStringifyOptions,
   type WktUserOptions,
+  wktToGeoJSON,
 } from "./index";
 
 function reversible(
@@ -15,10 +16,11 @@ function reversible(
   userOptions: WktUserOptions = {
     emptyAsNull: true,
   },
+  stringifyOptions?: WktStringifyOptions,
 ) {
   const geometry = wktToGeoJSON(wkt1, userOptions);
   expect(geometry).not.toBeNull();
-  const wkt = geoJSONToWkt(geometry!);
+  const wkt = geoJSONToWkt(geometry!, stringifyOptions);
   expect(geometry).toEqual(geometry1);
   /**
    * The passed WKT is case insensitive,
@@ -109,6 +111,18 @@ describe("parsing and stringifying", () => {
         [3, 4],
       ],
     });
+    reversible(
+      "MULTIPOINT ((1 2),(3 4))",
+      {
+        type: "MultiPoint",
+        coordinates: [
+          [1, 2],
+          [3, 4],
+        ],
+      },
+      undefined,
+      { version: "1.2.0" },
+    );
   });
   it("linestring", () => {
     reversible("LINESTRING (1 2,3 4)", {
