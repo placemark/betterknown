@@ -121,7 +121,7 @@ describe("parsing and stringifying", () => {
         ],
       },
       undefined,
-      { version: "1.2.1" },
+      { version: "1.2.0" },
     );
   });
   it("linestring", () => {
