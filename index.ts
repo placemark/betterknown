@@ -19,6 +19,21 @@ interface ZM {
 export type { Position };
 
 /**
+ * User-facing options for the WKT stringifier.
+ */
+export interface WktStringifyOptions {
+  /**
+   * Version of the SFA standard to follow:
+   * https://www.ogc.org/standards/sfa/
+   *
+   * 1.2.1 has the difference of including parenthesis around
+   * MULTIPOINT strings: MULTIPOINT((X Y),...)
+   * instead of MULTIPOINT(X Y, ...)
+   */
+  version?: "1.1.0" | "1.2.1";
+}
+
+/**
  * User-facing options for the WKT parser.
  */
 export interface WktUserOptions {
@@ -448,7 +463,10 @@ function stringifyPoint(point: Point): string {
   )})`;
 }
 
-function stringifyMultiPoint(geometry: MultiPoint): string {
+function stringifyMultiPoint(
+  geometry: MultiPoint,
+  options: WktStringifyOptions,
+): string {
   if (geometry.coordinates.length === 0) {
     return "MULTIPOINT EMPTY";
   }
@@ -456,7 +474,11 @@ function stringifyMultiPoint(geometry: MultiPoint): string {
   return `MULTIPOINT${stringifyZM(
     geometry.coordinates[0],
   )}(${geometry.coordinates
-    .map((coordinate) => stringifyCoordinate(coordinate))
+    .map((coordinate) =>
+      options.version === "1.2.1"
+        ? `(${stringifyCoordinate(coordinate)})`
+        : stringifyCoordinate(coordinate),
+    )
     .join(",")})`;
 }
 
@@ -472,13 +494,16 @@ function stringifyLineString(geometry: LineString): string {
   return `LINESTRING${stringifyZM(geometry.coordinates[0])}${innerWkt}`;
 }
 
-function stringifyGeometryCollection(geometry: GeometryCollection): string {
+function stringifyGeometryCollection(
+  geometry: GeometryCollection,
+  options: WktStringifyOptions,
+): string {
   if (geometry.geometries.length === 0) {
     return "GEOMETRYCOLLECTION EMPTY";
   }
 
   const innerWkt = `(${geometry.geometries
-    .map((geometry) => geoJSONToWkt(geometry))
+    .map((geometry) => geoJSONToWkt(geometry, options))
     .join(",")})`;
 
   return `GEOMETRYCOLLECTION${innerWkt}`;
@@ -577,16 +602,19 @@ function wktToGeoJSONinner(wktParser: WktParser, userOptions: WktUserOptions) {
  *   stringified as "EMPTY" WKT geometries. This is technically
  *   valid, but rare, for GeoJSON.
  */
-export function geoJSONToWkt(geometry: Geometry): string {
+export function geoJSONToWkt(
+  geometry: Geometry,
+  options: WktStringifyOptions = { version: "1.1.0" },
+): string {
   switch (geometry.type) {
     case "Point":
       return stringifyPoint(geometry);
     case "LineString":
       return stringifyLineString(geometry);
     case "MultiPoint":
-      return stringifyMultiPoint(geometry);
+      return stringifyMultiPoint(geometry, options);
     case "GeometryCollection":
-      return stringifyGeometryCollection(geometry);
+      return stringifyGeometryCollection(geometry, options);
     case "Polygon":
       return stringifyPolygon(geometry);
     case "MultiPolygon":
