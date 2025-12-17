@@ -475,7 +475,7 @@ function stringifyMultiPoint(
     geometry.coordinates[0],
   )}(${geometry.coordinates
     .map((coordinate) =>
-      options.version === "1.2.1"
+      options.version === "1.2.0"
         ? `(${stringifyCoordinate(coordinate)})`
         : stringifyCoordinate(coordinate),
     )
